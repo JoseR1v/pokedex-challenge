@@ -1,98 +1,165 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import EmptyState from "@/components/EmpyState";
+import HomeHeader from "@/components/home/HomeHeader";
+import List from "@/components/List";
+import Loader from "@/components/Loader";
+import PokemonCard from "@/components/pokemon/PokemonCard";
+import SearchFilterBar from "@/components/SearchFilterBar";
+import { clearAll, getUserName } from "@/helpers";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { useFavoritesList } from "@/hooks/useFavoritesList";
+import { usePokemon } from "@/hooks/usePokemon";
+import { usePokemonTypes } from "@/hooks/usePokemonTypes";
+import { router } from "expo-router";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+type SpritePack = {
+  officialArtwork?: string | null;
+  frontDefault?: string | null;
+  dreamWorld?: string | null;
+};
+
+type Row = {
+  id?: number | null;
+  name: string;
+  types: string[];
+  sprites: SpritePack;
+};
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const insets = useSafeAreaInsets();
+  const { PokemonQuery } = usePokemon();
+  const { data: types = [] } = usePokemonTypes();
+  const { favorites } = useFavoritesList();
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isRefetching,
+    refetch,
+    error,
+  } = PokemonQuery;
+
+  const [name, setName] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const debouncedSearch = useDebouncedValue(search, 300);
+  const [selectedType, setSelectedType] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => setName(await getUserName()))();
+  }, []);
+
+  const onLogout = useCallback(async () => {
+    await clearAll();
+    router.replace("/login");
+  }, []);
+
+  const items: Row[] = useMemo(() => {
+    return data?.pages.flatMap((p: Row[]) => p) ?? [];
+  }, [data]);
+
+  const norm = (s: string) =>
+    s.normalize?.("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase() ?? s.toLowerCase();
+  const term = norm(debouncedSearch);
+
+  const filteredItems = useMemo(() => {
+    return items.filter((it) => {
+      const matchesSearch = term ? norm(it.name).includes(term) : true;
+      const matchesType = selectedType ? it.types?.includes(selectedType) : true;
+      return matchesSearch && matchesType;
+    });
+  }, [items, term, selectedType]);
+
+  const isFiltering = !!term || !!selectedType;
+
+  const keyExtractor = useCallback(
+    (item: Row, index: number) => String(item.id ?? item.name ?? index),
+    []
+  );
+
+  const renderItem = useCallback(({ item }: { item: Row }) => {
+    const fav = favorites.has(item.name.toLowerCase());
+    return (
+      <View style={{ flex: 1 }}>
+        <PokemonCard
+          name={item.name}
+          types={item.types}
+          sprites={item.sprites}
+          isFavorite={fav}
+          onPress={() => router.push(`/pokemon/${item.id}`)}
+        />
+      </View>
+    );
+  }, [favorites, router]);
+
+  const onRefresh = useCallback(() => {
+    refetch();
+  }, [refetch]);
+
+  return (
+    <View style={{ flex: 1, paddingTop: insets.top, gap: 16 }}>
+      <Loader visible={isLoading} message="Cargando Pokémons..." />
+
+      <HomeHeader name={name} height={210}>
+        <SearchFilterBar
+          search={search}
+          onChangeSearch={setSearch}
+          types={types}
+          selectedType={selectedType}
+          onSelectType={setSelectedType}
+          solidChips
+        />
+      </HomeHeader>
+
+
+      {error ? (
+        <View className="w-full px-4 mb-2">
+          <Text className="text-sm text-red-500">
+            Ocurrió un error al cargar. {String((error as any)?.message ?? "")}
+          </Text>
+        </View>
+      ) : null}
+
+      <List<Row>
+        data={filteredItems}
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
+        hasNextPage={!!hasNextPage}
+        fetchNextPage={fetchNextPage}
+        isFetchingNextPage={!!isFetchingNextPage}
+        onEndReachedThreshold={0.5}
+        refreshing={!!isRefetching}
+        onRefresh={onRefresh}
+        numColumns={2}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}
+        columnWrapperStyle={{ gap: 12 }}
+        itemSeparatorHeight={12}
+        ListEmptyComponent={
+          !isLoading ? (
+            <EmptyState
+              title={isFiltering ? "Sin resultados" : "Nada por aquí"}
+              subtitle={
+                isFiltering
+                  ? "Intenta con otra búsqueda o quita los filtros."
+                  : "Todavía no hay pokémon para mostrar."
+              }
+              imageSource={require("@/assets/images/pokeball.png")}
+              actionLabel={isFiltering ? "Limpiar filtros" : undefined}
+              onAction={isFiltering ? () => { setSearch(""); setSelectedType(null); } : undefined}
+              compact
+            />
+          ) : null
+        }
+        initialNumToRender={10}
+        windowSize={7}
+        maxToRenderPerBatch={10}
+        showsVerticalScrollIndicator={false}
+        removeClippedSubviews
+      />
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
