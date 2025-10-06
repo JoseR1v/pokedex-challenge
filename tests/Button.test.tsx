@@ -1,6 +1,5 @@
 import Button from "@/components/ui/Button";
 import { fireEvent, render } from "@testing-library/react-native";
-import React from "react";
 
 describe("Button", () => {
   it("renderiza label y dispara onPress", () => {

@@ -1,13 +1,13 @@
 import React from "react";
 import {
-    ActivityIndicator,
-    GestureResponderEvent,
-    Pressable,
-    StyleProp,
-    Text,
-    TextStyle,
-    View,
-    ViewStyle,
+  ActivityIndicator,
+  GestureResponderEvent,
+  Pressable,
+  StyleProp,
+  Text,
+  TextStyle,
+  View,
+  ViewStyle,
 } from "react-native";
 
 type Variant = "primary" | "secondary" | "outline" | "ghost" | "danger";
@@ -106,7 +106,8 @@ export default function Button({
   textStyle,
   accessibilityLabel,
 }: Props) {
-  const cls = classesFor(variant, disabled);
+  const isDisabled = !!(disabled || loading);
+  const cls = classesFor(variant, isDisabled);
   const base =
     "rounded-xl flex-row items-center justify-center active:opacity-90 shadow-md";
   const width = fullWidth ? "w-full" : "w-auto";
@@ -117,15 +118,20 @@ export default function Button({
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
-      onPress={disabled || loading ? undefined : onPress}
-      android_ripple={{ color: cls?.ripple }}
+      accessibilityState={{ disabled: isDisabled, busy: !!loading }}
+      disabled={isDisabled}
+      onPress={(e) => {
+        if (isDisabled) return;
+        onPress?.(e);
+      }}
+      android_ripple={!isDisabled ? { color: cls?.ripple } : undefined}
       className={[
         base,
         width,
         padding,
         cls?.container,
         cls?.border,
-        disabled || loading ? "opacity-80" : "",
+        isDisabled ? "opacity-80" : "",
         className ?? "",
       ].join(" ")}
       style={style}

@@ -1,6 +1,5 @@
 import PokemonCard from "@/components/pokemon/PokemonCard";
 import { render } from "@testing-library/react-native";
-import React from "react";
 
 describe("PokemonCard", () => {
   it("muestra nombre capitalizado y tipos", () => {

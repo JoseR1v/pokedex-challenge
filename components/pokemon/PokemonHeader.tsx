@@ -2,7 +2,6 @@ import { getTypePillStyle } from "@/constants/colors";
 import { useFavoritePokemon } from "@/hooks/useFavoritePokemon";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 
 type Props = {

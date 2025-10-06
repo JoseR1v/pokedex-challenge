@@ -1,6 +1,5 @@
 import Loader from "@/components/Loader";
 import { render } from "@testing-library/react-native";
-import React from "react";
 
 describe("Loader", () => {
   it("se muestra cuando visible=true", () => {

@@ -1,6 +1,5 @@
 import Input from "@/components/ui/Input";
 import { fireEvent, render } from "@testing-library/react-native";
-import React from "react";
 
 describe("Input", () => {
   it("renderiza label y helper", () => {
