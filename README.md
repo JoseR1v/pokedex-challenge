@@ -1,6 +1,3 @@
-Aquí tienes un README breve y directo para tu repo. Pégalo tal cual en `README.md`:
-
-````markdown
 # Pokedex Challenge
 
 Pequeña app de Pokédex hecha con **Expo + React Native**, **Expo Router** para rutas por archivos, **NativeWind (Tailwind)** para estilos y **React Query** para datos. Corre en Android, iOS y Web.
