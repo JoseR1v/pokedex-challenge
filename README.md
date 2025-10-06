@@ -1,50 +1,45 @@
-# Welcome to your Expo app 👋
+Aquí tienes un README breve y directo para tu repo. Pégalo tal cual en `README.md`:
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+````markdown
+# Pokedex Challenge
 
-## Get started
+Pequeña app de Pokédex hecha con **Expo + React Native**, **Expo Router** para rutas por archivos, **NativeWind (Tailwind)** para estilos y **React Query** para datos. Corre en Android, iOS y Web.
 
-1. Install dependencies
+---
 
-   ```bash
-   npm install
-   ```
+## Levantar el proyecto
 
-2. Start the app
+1) Instalar dependencias
+```bash
+npm install
+````
 
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+2. Iniciar el bundler
 
 ```bash
-npm run reset-project
+npm start
+# o
+npx expo start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+3. Abrir en cada plataforma (opcional)
 
-## Learn more
+```bash
+npm run android   # abre en Android (emulador o dispositivo)
+npm run ios       # abre en iOS (simulador, en macOS)
+npm run web       # abre en el navegador
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+## Correr tests
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```bash
+npm test          # ejecutar una vez
+npm run test:watch # modo watch
+npm run test:ci    # modo CI
+```
 
-## Join the community
+Si necesitas limpiar caché de Jest:
 
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+npx jest --clearCache
+```
